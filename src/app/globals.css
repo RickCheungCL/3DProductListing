@@ -1,0 +1,62 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+@layer base {
+  :root {
+    --color-product-red: 229 62 62;
+    --color-product-blue: 49 130 206;
+    --color-product-green: 56 161 105;
+    --color-product-black: 26 32 44;
+    --color-product-white: 247 250 252;
+  }
+}
+
+/* Custom component classes */
+@layer components {
+  .color-option {
+    @apply flex items-center p-3 rounded-md transition-all;
+  }
+  
+  .color-option-active {
+    @apply ring-2 ring-blue-500 bg-blue-50;
+  }
+  
+  .color-option-inactive {
+    @apply hover:bg-gray-100;
+  }
+  
+  .color-swatch {
+    @apply w-6 h-6 rounded-full mr-2;
+  }
+  
+  .control-slider {
+    @apply w-full;
+  }
+  
+  .preset-button {
+    @apply text-xs bg-gray-100 hover:bg-gray-200 py-2 px-3 rounded;
+  }
+}

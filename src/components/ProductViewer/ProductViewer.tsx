@@ -3,17 +3,18 @@
 import React, { useRef, useState, useEffect, Suspense } from 'react';
 import { Canvas, useFrame, useLoader, useThree ,Decal } from '@react-three/fiber';
 import { OrbitControls, useGLTF, Environment, ContactShadows, Html } from '@react-three/drei';
-import { TextureLoader, Mesh, Color, Vector3, Euler,PerspectiveCamera,Group } from 'three';
+import { TextureLoader, Mesh, Color, Vector3, Euler,PerspectiveCamera,Group,Texture,DoubleSide  } from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js';
 import { setupModelPosition, setupCameraForModel } from '../../utils/modelPositioning';
 
 // Type for logo settings
 interface LogoSettings {
-  visible: boolean;
+  visible: Boolean;
   position: { x: number; y: number; z: number };
   rotation: { x: number; y: number; z: number };
   scale: number;
+  customImage?:string;
 }
 
 // Props for the ProductViewer component
@@ -45,8 +46,32 @@ function ProductModel({ color, logoSettings }: ProductModelProps) {
   }, [sceneRef]);
   
   // Load the logo texture with React Three Fiber's useLoader
-  const logoTexture = useLoader(TextureLoader, '/textures/logo.png');
-  
+  const defaultLogoTexture = useLoader(TextureLoader, '/textures/logo.png');
+  const [customLogoTexture, setCustomLogoTexture] = useState<Texture | null>(null);
+
+
+  const logoTexture = customLogoTexture || defaultLogoTexture;
+
+
+    // Load custom logo if provided
+  useEffect(() => {
+    if (logoSettings.customImage) {
+      const loader = new TextureLoader();
+      loader.load(
+        logoSettings.customImage,
+        (texture) => {
+          setCustomLogoTexture(texture);
+        },
+        undefined,
+        (error) => {
+         console.error('Error loading custom logo:', error);
+        }
+      );
+    } else {
+      setCustomLogoTexture(null);
+    }
+  }, [logoSettings.customImage]);
+
   // Use a direct GLTFLoader approach within useEffect
   useEffect(() => {
     // Create loader instances
@@ -153,24 +178,26 @@ function ProductModel({ color, logoSettings }: ProductModelProps) {
       {/* The model will be loaded and added to this group by the useEffect */}
       
       {/* Logo plane (only visible if enabled) */}
-      {logoSettings.visible && logoTexture && (
+      {logoSettings.visible && (
         <mesh
           position={[
-            logoSettings.position.x,
-            logoSettings.position.y,
-            logoSettings.position.z
+            logoSettings.position.x, //-1.6
+            logoSettings.position.y,  //-0.3
+            logoSettings.position.z  //1.5
           ]}
           rotation={[
-            logoSettings.rotation.x,
-            logoSettings.rotation.y,
+            logoSettings.rotation.x, //292 degree
+            logoSettings.rotation.y, //355 degree
             logoSettings.rotation.z
           ]}
-          scale={logoSettings.scale*2}
+          scale={logoSettings.scale}
         >
           <planeGeometry args={[1, 1]} />
           <meshStandardMaterial 
             map={logoTexture} 
-            transparent={true} 
+            transparent={true}
+            depthTest = {true}
+            depthWrite = {false} 
             opacity={1}
           />
         </mesh>

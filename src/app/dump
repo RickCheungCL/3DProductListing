@@ -1,0 +1,8 @@
+<div className="bg-white p-4 rounded-lg shadow">
+            <h2 className="text-xl font-semibold mb-4">Color Options</h2>
+            <ColorSelector 
+              availableColors={availableColors} 
+              currentColor={productColor} 
+              onColorChange={handleColorChange} 
+            />
+          </div>

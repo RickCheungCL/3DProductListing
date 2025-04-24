@@ -4,19 +4,27 @@ import { useState } from 'react';
 import ProductViewer from '../components/ProductViewer/ProductViewer';
 import ColorSelector from '../components/ProductViewer/ColorSelector';
 import LogoControls from '../components/ProductViewer/LogoControls';
+import {ChevronDown, ChevronUp} from 'lucide-react';
 
 export default function Home() {
   // State for product color
-  const [productColor, setProductColor] = useState('#3182CE'); // Default blue
+  const [productColor, setProductColor] = useState('#1A202C'); // Default black
   
   // State for logo visibility and position
   const [logoSettings, setLogoSettings] = useState({
-    visible: true,
-    position: { x: 0, y: 0, z: 0 },
-    rotation: { x: 0, y: 0, z: 0 },
-    scale: 1.0
+    visible: false,
+    position: { x: -1.6, y: -0.3, z: 1.5 },
+    rotation: { x: 5.07, y: 6.2, z: 0 },
+    scale: 0.5,
+    customImage:undefined
   });
+  // State for Color visibility and position
+  const [colorSectionExpanded, setColorSectionExpanded] = useState(false);
 
+
+  const toggleColorSection = () => {
+    setColorSectionExpanded(!colorSectionExpanded);
+  };
   // Available colors for the product
   const availableColors = [
     { name: 'Red', value: '#E53E3E' },
@@ -35,7 +43,7 @@ export default function Home() {
   const handleLogoSettingsChange = (newSettings: any) => {
     setLogoSettings({ ...logoSettings, ...newSettings });
   };
-
+  const currentColorName = availableColors.find(color => color.value === productColor)?.name || 'Custom';
   return (
     <main className="flex min-h-screen flex-col items-center p-4 md:p-6 lg:p-8">
       <h1 className="text-3xl font-bold mb-8">3D Product Viewer</h1>
@@ -52,14 +60,40 @@ export default function Home() {
         {/* Controls Panel */}
         <div className="lg:col-span-1 flex flex-col gap-6">
           {/* Color Selection */}
-          <div className="bg-white p-4 rounded-lg shadow">
-            <h2 className="text-xl font-semibold mb-4">Color Options</h2>
-            <ColorSelector 
-              availableColors={availableColors} 
-              currentColor={productColor} 
-              onColorChange={handleColorChange} 
-            />
+          <div className="bg-white rounded-lg shadow">
+            <button 
+              className="w-full p-4 flex items-center justify-between text-xl font-semibold"
+              onClick={toggleColorSection}
+            >
+              <div className="flex items-center space-x-2">
+                <span>Color</span>
+                <div className="flex items-center ml-2">
+                  <div 
+                    className="w-4 h-4 rounded-full mr-1" 
+                    style={{ backgroundColor: productColor }}
+                    aria-hidden="true"
+                  />
+                  <span className="text-sm font-normal text-gray-600">{currentColorName}</span>
+                </div>
+              </div>
+              {colorSectionExpanded ? (
+                <ChevronUp className="h-5 w-5 text-gray-500" />
+              ) : (
+                <ChevronDown className="h-5 w-5 text-gray-500" />
+              )}
+            </button>
+            
+            {colorSectionExpanded && (
+              <div className="p-4 pt-0">
+                <ColorSelector 
+                  availableColors={availableColors} 
+                  currentColor={productColor} 
+                  onColorChange={handleColorChange} 
+                />
+              </div>
+            )}
           </div>
+          
           
           {/* Logo Controls */}
           <div className="bg-white p-4 rounded-lg shadow">

@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React,{useRef} from 'react';
 
 interface LogoPosition {
   x: number;
@@ -19,6 +19,7 @@ interface LogoSettings {
   position: LogoPosition;
   rotation: LogoRotation;
   scale: number;
+  customImage?: string;
 }
 
 interface LogoControlsProps {
@@ -30,6 +31,9 @@ export default function LogoControls({
   logoSettings,
   onSettingsChange
 }: LogoControlsProps) {
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   // Handle toggle visibility
   const handleVisibilityToggle = () => {
     onSettingsChange({ visible: !logoSettings.visible });
@@ -60,6 +64,54 @@ export default function LogoControls({
     onSettingsChange({ scale: value });
   };
 
+
+   // Handle image upload
+  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const file = event.target.files?.[0];
+  if (!file) return;
+    
+    // Validate file is an image
+  if (!file.type.match('image.*')) {
+    alert('Please select an image file (jpg, png, etc.)');
+    return;
+  }
+    
+    // Check file size (limit to 2MB)
+  if (file.size > 2 * 1024 * 1024) {
+    alert('Image is too large. Please select an image smaller than 2MB.');
+    return;
+  }
+    
+
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    if (typeof e.target?.result === 'string') {
+      // Update logo settings with the new image
+      onSettingsChange({ 
+      customImage: e.target.result,
+      visible: true // Also make the logo visible when uploading
+        });
+      }
+  };
+  reader.readAsDataURL(file);
+    
+    // Reset the input
+  if (fileInputRef.current) {
+    fileInputRef.current.value = '';
+  }
+  };
+  
+  // Trigger file input click
+  const handleUploadClick = () => {
+    fileInputRef.current?.click();
+  };
+  
+  // Reset to default logo
+  const handleResetLogo = () => {
+    onSettingsChange({ customImage: undefined });
+  };
+
+
   return (
     <div className="flex flex-col space-y-4">
       {/* Logo Visibility Toggle */}
@@ -75,6 +127,60 @@ export default function LogoControls({
           <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
         </label>
       </div>
+
+      {/* Logo Upload - Only show if logo is visible */}
+      {logoSettings.visible && (
+        <div className="pt-2">
+          <h3 className="text-sm font-semibold mb-2">Logo Image</h3>
+          <div className="flex flex-col space-y-2">
+            {/* Hidden file input */}
+            <input 
+              type="file" 
+              ref={fileInputRef} 
+              className="hidden" 
+              accept="image/*" 
+              onChange={handleImageUpload}
+            />
+            
+            {/* Upload button */}
+            <button
+              className="w-full py-2 px-3 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-md text-sm font-medium transition-colors"
+              onClick={handleUploadClick}
+            >
+              Upload Custom Logo
+            </button>
+            
+            {/* Reset button - only show if custom image is uploaded */}
+            {logoSettings.customImage && (
+              <button
+                className="w-full py-2 px-3 bg-gray-100 text-gray-700 hover:bg-gray-200 rounded-md text-sm font-medium transition-colors"
+                onClick={handleResetLogo}
+              >
+                Reset to Default Logo
+              </button>
+            )}
+            
+            {/* Preview of current logo */}
+            <div className="mt-2 border border-gray-200 rounded-md p-2 bg-gray-50">
+              <p className="text-xs text-gray-500 mb-1">Current Logo:</p>
+              <div className="w-full h-16 flex items-center justify-center bg-white rounded">
+                {logoSettings.customImage ? (
+                  <img 
+                    src={logoSettings.customImage} 
+                    alt="Custom logo" 
+                    className="max-w-full max-h-full object-contain"
+                  />
+                ) : (
+                  <div className="text-xs text-gray-400">Default Logo</div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+
+
 
       {/* Position Controls - Only show if logo is visible */}
       {logoSettings.visible && (
@@ -222,35 +328,30 @@ export default function LogoControls({
             <button
               className="preset-button"
               onClick={() => onSettingsChange({
-                position: { x: 0, y: 0, z: 1 },
-                rotation: { x: 0, y: 0, z: 0 }
+                position: { x: -1.6, y: -0.3, z: 1.5 },
+                rotation: { x: 5.07, y: 6.2, z: 0 },
+                scale: 0.5
               })}
             >
-              Front Center
+              Front Right
             </button>
             <button
               className="text-xs bg-gray-100 hover:bg-gray-200 py-2 px-3 rounded"
               onClick={() => onSettingsChange({
-                position: { x: 1, y: 0, z: 0 },
-                rotation: { x: 0, y: 1.57, z: 0 }
+                position: { x: 0.5, y: -0.3, z: 1.5 },
+                rotation: { x: 6.2, y: 6.2, z: 0 },
+                scale: 0.5
               })}
             >
               Right Side
             </button>
+
             <button
               className="text-xs bg-gray-100 hover:bg-gray-200 py-2 px-3 rounded"
               onClick={() => onSettingsChange({
-                position: { x: -1, y: 0, z: 0 },
-                rotation: { x: 0, y: -1.57, z: 0 }
-              })}
-            >
-              Left Side
-            </button>
-            <button
-              className="text-xs bg-gray-100 hover:bg-gray-200 py-2 px-3 rounded"
-              onClick={() => onSettingsChange({
-                position: { x: 0, y: 1, z: 0 },
-                rotation: { x: 1.57, y: 0, z: 0 }
+                position: { x: -1.2, y: 0.3, z: 0.3 },
+                rotation: { x: 6.2, y: 4.8, z: 0 },
+                scale: 0.6
               })}
             >
               Top
